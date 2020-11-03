@@ -28,7 +28,7 @@ public class UtilsTextWriter {
 
 		try {
 //			mFile = new File( Environment.getExternalStoragePublicDirectory("Documents/PageReader") ,	FILENAME);
-			mFile = new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + File.separator + "PageReader") ,	FILENAME);
+			mFile = new File( Environment.getExternalStoragePublicDirectory("") ,	FILENAME);
 			
 			File parentFile = mFile.getParentFile();
 			if (parentFile != null)
@@ -61,7 +61,7 @@ public class UtilsTextWriter {
 	public static String getCurrentTimeStamp(){
 	    try {
 
-	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HHmmss");
+	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH mm");
 	        String currentTimeStamp = dateFormat.format(new Date()); // Find todays date
 
 	        return currentTimeStamp;

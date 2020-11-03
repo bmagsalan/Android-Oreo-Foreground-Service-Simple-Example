@@ -31,6 +31,8 @@ public class MyService extends Service {
     private Handler handler;
     private int count = 0;
     private static int stateService = Constants.STATE_SERVICE.NOT_CONNECTED;
+    private static boolean connected = false;
+    private static boolean laststate = connected;
 
     public MyService() {
     }
@@ -63,20 +65,26 @@ public class MyService extends Service {
             public void run() {
                 // need to do tasks on the UI thread
                 List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
-                String result = "Not Connected";
+                String result = "stepped_out";
+                connected = false;
                 for( ScanResult s : wifiScanResults ){
 
-                    UtilsTextWriter.write(s.SSID);
-
                     if( s.SSID.contains("Acanac")){
-                        result = "Connected: " + s.SSID;
+                        result = "logged_in";
+                        connected = true;
                         break;
                     }
                 }
 
-                Toast.makeText(getApplicationContext(), result,Toast.LENGTH_SHORT).show();
+                if( laststate != connected ){
+                    UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
+                }
 
-                handler.postDelayed(this, 5000);
+
+                laststate = connected;
+
+
+                handler.postDelayed(this, 30_000);
             }
         };
 
