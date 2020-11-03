@@ -28,7 +28,7 @@ public class ScreenActionReceiver extends BroadcastReceiver {
         sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
         String log = sb.toString();
         Log.e(TAG, log);
-        Toast.makeText(context, log, Toast.LENGTH_LONG).show();
+//        Toast.makeText(context, log, Toast.LENGTH_LONG).show();
 
 
 

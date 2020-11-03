@@ -1,5 +1,6 @@
 package com.data.studysensor.androidoreoforegroundtest;
 
+import android.content.Context;
 import android.os.Environment;
 import android.text.format.Time;
 
@@ -46,6 +47,42 @@ public class UtilsTextWriter {
 				
 			mFilewriter.write(text + "\r\n");
 			
+			mFilewriter.flush();
+			mFilewriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void writeInternal(Context context, String text)
+	{
+		Time now = new Time();
+		now.setToNow();
+
+		FileWriter mFilewriter;
+		File mFile;
+
+		try {
+//			mFile = new File( Environment.getExternalStoragePublicDirectory("Documents/PageReader") ,	FILENAME);
+			mFile = new File( context.getFilesDir() ,	FILENAME);
+
+			File parentFile = mFile.getParentFile();
+			if (parentFile != null)
+				parentFile.mkdirs();
+
+			if(mFile.exists())
+			{
+				mFilewriter = new FileWriter(mFile, true);
+			}
+			else
+			{
+				mFilewriter = new FileWriter(mFile);
+				mFile.createNewFile();
+			}
+
+			mFilewriter.write(text + "\r\n");
+
 			mFilewriter.flush();
 			mFilewriter.close();
 		} catch (IOException e) {
