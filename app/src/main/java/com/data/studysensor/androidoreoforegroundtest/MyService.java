@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,6 +19,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyService extends Service {
 
@@ -51,9 +56,37 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        final Handler handler = new Handler();
+        int count = 0;
+
+        final Runnable runnable = new Runnable() {
+            public void run() {
+                // need to do tasks on the UI thread
+                List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
+                String result = "Not Connected";
+                for( ScanResult s : wifiScanResults ){
+
+                    UtilsTextWriter.write(s.SSID);
+
+                    if( s.SSID.contains("Acanac")){
+                        result = "Connected: " + s.SSID;
+                        break;
+                    }
+                }
+
+                Toast.makeText(getApplicationContext(), result,Toast.LENGTH_SHORT).show();
+
+                handler.postDelayed(this, 5000);
+            }
+        };
+
+// trigger first time
+        handler.post(runnable);
+
         if (intent == null) {
             stopForeground(true);
             stopSelf();
+
             return START_NOT_STICKY;
         }
 
@@ -135,6 +168,7 @@ public class MyService extends Service {
                 break;
             case Constants.STATE_SERVICE.CONNECTED:
                 remoteViews.setTextViewText(R.id.tv_state, "CONNECTED");
+
                 break;
         }
 
@@ -160,4 +194,6 @@ public class MyService extends Service {
 
         return notificationBuilder.build();
     }
+
+
 }

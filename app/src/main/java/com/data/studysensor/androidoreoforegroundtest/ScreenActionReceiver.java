@@ -4,9 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.util.List;
 
 public class ScreenActionReceiver extends BroadcastReceiver {
 
@@ -21,7 +27,7 @@ public class ScreenActionReceiver extends BroadcastReceiver {
         sb.append("Action: " + intent.getAction() + "\n");
         sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
         String log = sb.toString();
-        Log.d(TAG, log);
+        Log.e(TAG, log);
         Toast.makeText(context, log, Toast.LENGTH_LONG).show();
 
 
@@ -61,6 +67,7 @@ public class ScreenActionReceiver extends BroadcastReceiver {
                 context.startService(new Intent(context, FloatingWindow.class));
             }
 
+
         }
 
         else if(Intent.ACTION_BOOT_COMPLETED.equals(action)){
@@ -76,6 +83,9 @@ public class ScreenActionReceiver extends BroadcastReceiver {
             } else {
                 context.startService(new Intent(context, FloatingWindow.class));
             }
+        }
+        else{
+            Log.e(TAG, action);
         }
 
     }
