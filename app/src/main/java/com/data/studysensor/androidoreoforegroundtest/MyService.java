@@ -27,8 +27,9 @@ public class MyService extends Service {
     private NotificationManager mNotificationManager;
     private static int counter = 0;
     private static boolean stateService;
-    private static Handler handler;
-
+    private static boolean started = false;
+    private static Handler handler = new Handler();
+    private static ScreenActionReceiver screenactionreceiver;
     public MyService() {
     }
 
@@ -58,11 +59,6 @@ public class MyService extends Service {
 
 
         if (intent == null) {
-            if( handler != null ){
-                handler.removeCallbacksAndMessages(0);
-                handler = null;
-            }
-
             stopForeground(true);
             stopSelf();
 
@@ -72,19 +68,17 @@ public class MyService extends Service {
         // if user starts the service
         switch (intent.getAction()) {
             case Constants.ACTION.START_ACTION:
+                started = true;
+
                 Log.d(TAG, "Received user starts foreground intent");
                 int count = 0;
 
-                if( handler != null ){
-                    handler.removeCallbacksAndMessages(0);
-                    handler = null;
-                }
 
-                handler = new Handler();
-
-
-                handler.postDelayed(new Runnable() {
+                Runnable runnable = new Runnable() {
                     public void run() {
+                        if( !started )
+                            return;
+
                         // need to do tasks on the UI thread
                         List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
                         String result = "stepped_out";
@@ -101,8 +95,11 @@ public class MyService extends Service {
 
                         if( stateService != connected ){
                             UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
-                            mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
+
                         }
+                        mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
+
+
 
                         Log.e( TAG, "" + UtilsTextWriter.readInternal(getApplicationContext()));
 
@@ -111,29 +108,33 @@ public class MyService extends Service {
                         stateService = connected;
 
                         handler.postDelayed(this, LOOP_DELAY);
+
                     }
-                }, LOOP_DELAY);
+                };
 
-
-
+// trigger first time
+                handler.postDelayed(runnable, LOOP_DELAY);
 
                 startForeground(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
 
                 // Start the locker receiver
-                final ScreenActionReceiver screenactionreceiver = new ScreenActionReceiver();
+                screenactionreceiver = new ScreenActionReceiver();
+
                 registerReceiver(screenactionreceiver, screenactionreceiver.getFilter());
 
                 connect();
                 break;
             case Constants.ACTION.STOP_ACTION:
+                started = false;
                 handler.removeCallbacksAndMessages(0);
-                handler = null;
+                unregisterReceiver(screenactionreceiver);
                 stopForeground(true);
                 stopSelf();
                 break;
             default:
+                started = false;
                 handler.removeCallbacksAndMessages(0);
-                handler = null;
+                unregisterReceiver(screenactionreceiver);
                 stopForeground(true);
                 stopSelf();
                 break;
