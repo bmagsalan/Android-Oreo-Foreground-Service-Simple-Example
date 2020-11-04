@@ -23,11 +23,11 @@ public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
     private final static String FOREGROUND_CHANNEL_ID = "foreground_channel_id";
     private static final String KEY_WIFI_CONNECTED = "KEY_WIFI_CONNECTED";
-    private static final long LOOP_DELAY = 10_000;
+    private static final long LOOP_DELAY = 30_000;
     private NotificationManager mNotificationManager;
     private static int counter = 0;
     private static boolean stateService;
-    final Handler handler = new Handler();
+    private static Handler handler;
 
     public MyService() {
     }
@@ -58,6 +58,11 @@ public class MyService extends Service {
 
 
         if (intent == null) {
+            if( handler != null ){
+                handler.removeCallbacksAndMessages(0);
+                handler = null;
+            }
+
             stopForeground(true);
             stopSelf();
 
@@ -70,7 +75,15 @@ public class MyService extends Service {
                 Log.d(TAG, "Received user starts foreground intent");
                 int count = 0;
 
-                final Runnable runnable = new Runnable() {
+                if( handler != null ){
+                    handler.removeCallbacksAndMessages(0);
+                    handler = null;
+                }
+
+                handler = new Handler();
+
+
+                handler.postDelayed(new Runnable() {
                     public void run() {
                         // need to do tasks on the UI thread
                         List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
@@ -88,20 +101,20 @@ public class MyService extends Service {
 
                         if( stateService != connected ){
                             UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
+                            mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
                         }
 
                         Log.e( TAG, "" + UtilsTextWriter.readInternal(getApplicationContext()));
 
-                        mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
+
 
                         stateService = connected;
 
                         handler.postDelayed(this, LOOP_DELAY);
                     }
-                };
+                }, LOOP_DELAY);
 
-// trigger first time
-                handler.postDelayed(runnable, LOOP_DELAY);
+
 
 
                 startForeground(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
@@ -114,11 +127,13 @@ public class MyService extends Service {
                 break;
             case Constants.ACTION.STOP_ACTION:
                 handler.removeCallbacksAndMessages(0);
+                handler = null;
                 stopForeground(true);
                 stopSelf();
                 break;
             default:
                 handler.removeCallbacksAndMessages(0);
+                handler = null;
                 stopForeground(true);
                 stopSelf();
                 break;
@@ -175,6 +190,11 @@ public class MyService extends Service {
         // if it is connected
         remoteViews.setTextViewText(R.id.tv_state, UtilsTextWriter.getCurrentTimeStamp() + ": " + (stateService ? "Logged In" : "Out of Office"));
 
+
+
+
+        String text = UtilsTextWriter.getCurrentTimeStamp() + ": " + (stateService ? "Logged In" : "Out of Office");
+
         // notification builder
         NotificationCompat.Builder notificationBuilder;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -183,7 +203,10 @@ public class MyService extends Service {
             notificationBuilder = new NotificationCompat.Builder(this);
         }
         notificationBuilder
-                .setContent(remoteViews)
+//                .setContent(remoteViews)
+                .addAction(R.drawable.ic_launcher, "Cancel",
+                        pendingStopIntent)
+                .setContentText(text)
                 .setContentTitle("Wifi Time Tracker")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
