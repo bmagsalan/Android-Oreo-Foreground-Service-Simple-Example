@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".TimeTrackerActivity"
+    >
+    <Button
+        android:id="@+id/button_enable_service"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/enable_service"
+        android:onClick="goToAccessibilityServices"
+        />
+    <Button
+        android:id="@+id/button_check_hours"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/check_hours"
+        android:onClick="startHoursActivity"
+        />
+    <Button
+        android:id="@+id/button_check_hours_monthly"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/check_monthly"
+        android:onClick="startMonthlyHoursActivity"
+        />
+
+    <Button
+        android:id="@+id/button_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/send_email"
+        android:textAppearance="@android:style/TextAppearance.Widget.Button"
+        android:onClick="sendEmail"
+        />
+
+<!--    <Button-->
+<!--        android:id="@+id/button_create_entry"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="@string/create_entry"-->
+<!--        android:textAppearance="@android:style/TextAppearance.Widget.Button"-->
+<!--        android:onClick="createEntry"-->
+<!--        />-->
+
+</LinearLayout>

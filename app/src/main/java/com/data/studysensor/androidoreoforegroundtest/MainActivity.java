@@ -48,6 +48,12 @@ public class MainActivity extends Activity {
                 }else{
                     startService(startIntent);
                 }
+
+                Intent intent = new Intent(MainActivity.this, TimeTrackerActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                finish();
             }
         });
         stopButton.setOnClickListener(new View.OnClickListener() {

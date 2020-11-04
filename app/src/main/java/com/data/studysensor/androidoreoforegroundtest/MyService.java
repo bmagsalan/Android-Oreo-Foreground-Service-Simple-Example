@@ -23,6 +23,7 @@ public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
     private final static String FOREGROUND_CHANNEL_ID = "foreground_channel_id";
     private static final String KEY_WIFI_CONNECTED = "KEY_WIFI_CONNECTED";
+    private static final String KEY_LAST_STATE = "KEY_LAST_STATE";
     private static final long LOOP_DELAY = 10_000;
     private NotificationManager mNotificationManager;
     private static int counter = 0;
@@ -30,7 +31,7 @@ public class MyService extends Service {
     private static boolean started = false;
     private static Handler handler = new Handler();
     private static ScreenActionReceiver screenactionreceiver;
-    private String lastState = "";
+    private static String lastState = "";
 
     public MyService() {
     }
@@ -47,11 +48,13 @@ public class MyService extends Service {
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         stateService = getIsConnected(getApplicationContext()) ;
+        lastState = getLastState(getApplicationContext());
     }
 
     @Override
     public void onDestroy() {
         setIsConnected(getApplicationContext(), stateService);
+        setLastState(getApplicationContext(), lastState);
         super.onDestroy();
     }
 
@@ -241,4 +244,24 @@ public class MyService extends Service {
                 .apply();
     }
 
+    /**
+     * Returns true if requesting location updates, otherwise returns false.
+     *
+     * @param context The {@link Context}.
+     */
+    public static String getLastState(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(KEY_LAST_STATE, "first_run");
+    }
+
+    /**
+     * Stores the location updates state in SharedPreferences.
+     * @param requestingLocationUpdates The location updates state.
+     */
+    public static void setLastState(Context context, String text) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putString(KEY_LAST_STATE, text)
+                .apply();
+    }
 }
