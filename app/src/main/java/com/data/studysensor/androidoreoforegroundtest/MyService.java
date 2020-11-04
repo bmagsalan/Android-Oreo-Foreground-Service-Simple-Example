@@ -23,13 +23,15 @@ public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
     private final static String FOREGROUND_CHANNEL_ID = "foreground_channel_id";
     private static final String KEY_WIFI_CONNECTED = "KEY_WIFI_CONNECTED";
-    private static final long LOOP_DELAY = 30_000;
+    private static final long LOOP_DELAY = 10_000;
     private NotificationManager mNotificationManager;
     private static int counter = 0;
     private static boolean stateService;
     private static boolean started = false;
     private static Handler handler = new Handler();
     private static ScreenActionReceiver screenactionreceiver;
+    private String lastState = "";
+
     public MyService() {
     }
 
@@ -94,8 +96,9 @@ public class MyService extends Service {
                         }
 
                         if( stateService != connected ){
+                            lastState = UtilsTextWriter.getCurrentTimeStamp() + " " + result;
                             UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
-
+//                            mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
                         }
                         mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
 
@@ -131,13 +134,7 @@ public class MyService extends Service {
                 stopForeground(true);
                 stopSelf();
                 break;
-            default:
-                started = false;
-                handler.removeCallbacksAndMessages(0);
-                unregisterReceiver(screenactionreceiver);
-                stopForeground(true);
-                stopSelf();
-                break;
+
         }
 
         return START_NOT_STICKY;
@@ -194,7 +191,7 @@ public class MyService extends Service {
 
 
 
-        String text = UtilsTextWriter.getCurrentTimeStamp() + ": " + (stateService ? "Logged In" : "Out of Office");
+        String text = UtilsTextWriter.getCurrentTimeStamp() + ": " + lastState;
 
         // notification builder
         NotificationCompat.Builder notificationBuilder;
