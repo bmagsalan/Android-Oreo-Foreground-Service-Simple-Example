@@ -7,32 +7,27 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MyService extends Service {
 
     private static final String TAG = MyService.class.getSimpleName();
     private final static String FOREGROUND_CHANNEL_ID = "foreground_channel_id";
+    private static final String KEY_WIFI_CONNECTED = "KEY_WIFI_CONNECTED";
+    private static final long LOOP_DELAY = 10_000;
     private NotificationManager mNotificationManager;
-    private Handler handler;
-    private int count = 0;
-    private static int stateService = Constants.STATE_SERVICE.NOT_CONNECTED;
-    private static boolean connected = false;
-    private static boolean laststate = connected;
+    private static int counter = 0;
+    private static boolean stateService;
+    final Handler handler = new Handler();
 
     public MyService() {
     }
@@ -47,49 +42,20 @@ public class MyService extends Service {
     public void onCreate() {
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        stateService = Constants.STATE_SERVICE.NOT_CONNECTED;
+
+        stateService = getIsConnected(getApplicationContext()) ;
     }
 
     @Override
     public void onDestroy() {
-        stateService = Constants.STATE_SERVICE.NOT_CONNECTED;
+        setIsConnected(getApplicationContext(), stateService);
         super.onDestroy();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final Handler handler = new Handler();
-        int count = 0;
-
-        final Runnable runnable = new Runnable() {
-            public void run() {
-                // need to do tasks on the UI thread
-                List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
-                String result = "stepped_out";
-                connected = false;
-                for( ScanResult s : wifiScanResults ){
-
-                    if( s.SSID.contains("Acanac")){
-                        result = "logged_in";
-                        connected = true;
-                        break;
-                    }
-                }
-
-                if( laststate != connected ){
-                    UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
-                }
 
 
-                laststate = connected;
-
-
-                handler.postDelayed(this, 30_000);
-            }
-        };
-
-// trigger first time
-        handler.post(runnable);
 
         if (intent == null) {
             stopForeground(true);
@@ -102,6 +68,42 @@ public class MyService extends Service {
         switch (intent.getAction()) {
             case Constants.ACTION.START_ACTION:
                 Log.d(TAG, "Received user starts foreground intent");
+                int count = 0;
+
+                final Runnable runnable = new Runnable() {
+                    public void run() {
+                        // need to do tasks on the UI thread
+                        List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
+                        String result = "stepped_out";
+                        boolean connected = false;
+                        for( ScanResult s : wifiScanResults ){
+
+                            if( s.SSID.contains("Acanac")){
+                                result = "logged_in";
+                                connected = true;
+                                break;
+                            }
+
+                        }
+
+                        if( stateService != connected ){
+                            UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
+                        }
+
+                        Log.e( TAG, "" + UtilsTextWriter.readInternal(getApplicationContext()));
+
+                        mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
+
+                        stateService = connected;
+
+                        handler.postDelayed(this, LOOP_DELAY);
+                    }
+                };
+
+// trigger first time
+                handler.postDelayed(runnable, LOOP_DELAY);
+
+
                 startForeground(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
 
                 // Start the locker receiver
@@ -111,12 +113,15 @@ public class MyService extends Service {
                 connect();
                 break;
             case Constants.ACTION.STOP_ACTION:
+                handler.removeCallbacksAndMessages(0);
                 stopForeground(true);
                 stopSelf();
                 break;
             default:
+                handler.removeCallbacksAndMessages(0);
                 stopForeground(true);
                 stopSelf();
+                break;
         }
 
         return START_NOT_STICKY;
@@ -129,8 +134,6 @@ public class MyService extends Service {
                 new Runnable() {
                     public void run() {
                         Log.d(TAG, "Bluetooth Low Energy device is connected!!");
-                        Toast.makeText(getApplicationContext(),"Connected!",Toast.LENGTH_SHORT).show();
-                        stateService = Constants.STATE_SERVICE.CONNECTED;
                         startForeground(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
                     }
                 }, 10000);
@@ -170,15 +173,7 @@ public class MyService extends Service {
         remoteViews.setOnClickPendingIntent(R.id.btn_stop, pendingStopIntent);
 
         // if it is connected
-        switch(stateService) {
-            case Constants.STATE_SERVICE.NOT_CONNECTED:
-                remoteViews.setTextViewText(R.id.tv_state, "DISCONNECTED");
-                break;
-            case Constants.STATE_SERVICE.CONNECTED:
-                remoteViews.setTextViewText(R.id.tv_state, "CONNECTED");
-
-                break;
-        }
+        remoteViews.setTextViewText(R.id.tv_state, UtilsTextWriter.getCurrentTimeStamp() + ": " + (stateService ? "Logged In" : "Out of Office"));
 
         // notification builder
         NotificationCompat.Builder notificationBuilder;
@@ -189,8 +184,10 @@ public class MyService extends Service {
         }
         notificationBuilder
                 .setContent(remoteViews)
+                .setContentTitle("Wifi Time Tracker")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                .setPriority(Notification.PRIORITY_HIGH)
                 .setOnlyAlertOnce(true)
                 .setOngoing(true)
                 .setAutoCancel(true)
@@ -202,6 +199,25 @@ public class MyService extends Service {
 
         return notificationBuilder.build();
     }
+    /**
+     * Returns true if requesting location updates, otherwise returns false.
+     *
+     * @param context The {@link Context}.
+     */
+    public static boolean getIsConnected(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(KEY_WIFI_CONNECTED, false);
+    }
 
+    /**
+     * Stores the location updates state in SharedPreferences.
+     * @param requestingLocationUpdates The location updates state.
+     */
+    public static void setIsConnected(Context context, boolean requestingLocationUpdates) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putBoolean(KEY_WIFI_CONNECTED, requestingLocationUpdates)
+                .apply();
+    }
 
 }

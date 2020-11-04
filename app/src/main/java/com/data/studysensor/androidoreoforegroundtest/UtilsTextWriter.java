@@ -4,7 +4,9 @@ import android.content.Context;
 import android.os.Environment;
 import android.text.format.Time;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -90,6 +92,34 @@ public class UtilsTextWriter {
 			e.printStackTrace();
 		}
 	}
+
+	public static String readInternal(Context context){
+		//Find the directory for the SD Card using the API
+//*Don't* hardcode "/sdcard"
+		File sdcard = context.getFilesDir();
+
+//Get the text file
+		File file = new File(sdcard,FILENAME);
+
+//Read text from file
+		StringBuilder text = new StringBuilder();
+
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line;
+
+			while ((line = br.readLine()) != null) {
+				text.append(line);
+				text.append('\n');
+			}
+			br.close();
+		}
+		catch (IOException e) {
+			//You'll need to add proper error handling here
+		}
+
+		return text.toString();
+	}
 	
 	/**
 	 * 
@@ -98,7 +128,7 @@ public class UtilsTextWriter {
 	public static String getCurrentTimeStamp(){
 	    try {
 
-	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH mm");
+	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH mm ss");
 	        String currentTimeStamp = dateFormat.format(new Date()); // Find todays date
 
 	        return currentTimeStamp;
