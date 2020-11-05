@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.data.studysensor.locationupdate.LocationUpdatesService;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +28,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+            if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
 
 
@@ -56,6 +58,22 @@ public class MainActivity extends Activity {
                 finish();
             }
         });
+//        startButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent startIntent = new Intent(MainActivity.this, LocationUpdatesService.class);
+//                startIntent.setAction(Constants.ACTION.START_ACTION);
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                    startForegroundService(startIntent);
+//                }else{
+//                    startService(startIntent);
+//                }
+//
+//
+//            }
+//        });
+
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -35,9 +35,11 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.data.studysensor.androidoreoforegroundtest.Constants;
 import com.data.studysensor.androidoreoforegroundtest.MainActivity;
 import com.data.studysensor.androidoreoforegroundtest.R;
 import com.data.studysensor.androidoreoforegroundtest.UtilsTextWriter;
@@ -100,12 +102,6 @@ public class LocationUpdatesService extends Service {
      */
     private static final int NOTIFICATION_ID = 12345678;
 
-    /**
-     * Used to check whether the bound activity has really gone away and not unbound as part of an
-     * orientation change. We create a foreground service notification only if the former takes
-     * place.
-     */
-    private boolean mChangingConfiguration = false;
 
     private NotificationManager mNotificationManager;
 
@@ -169,14 +165,27 @@ public class LocationUpdatesService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "Service started");
-        boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION,
-                false);
 
-        // We got here because the user decided to remove location updates from the notification.
-        if (startedFromNotification) {
-            removeLocationUpdates();
+        if (intent == null) {
+            stopForeground(true);
             stopSelf();
+
+            return START_NOT_STICKY;
         }
+
+        switch (intent.getAction()) {
+            case Constants.ACTION.START_ACTION:
+                    startForeground(NOTIFICATION_ID, getNotification());
+
+                break;
+            case Constants.ACTION.STOP_ACTION:
+                stopForeground(true);
+                break;
+
+        }
+
+
+
         // Tells the system to not try to recreate the service after it has been killed.
         return START_NOT_STICKY;
     }
@@ -184,45 +193,14 @@ public class LocationUpdatesService extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mChangingConfiguration = true;
     }
 
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        // Called when a client (MainActivity in case of this sample) comes to the foreground
-        // and binds with this service. The service should cease to be a foreground service
-        // when that happens.
-        Log.i(TAG, "in onBind()");
-        stopForeground(true);
-        mChangingConfiguration = false;
-        return mBinder;
+        return null;
     }
 
-    @Override
-    public void onRebind(Intent intent) {
-        // Called when a client (MainActivity in case of this sample) returns to the foreground
-        // and binds once again with this service. The service should cease to be a foreground
-        // service when that happens.
-        Log.i(TAG, "in onRebind()");
-        stopForeground(true);
-        mChangingConfiguration = false;
-        super.onRebind(intent);
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        Log.i(TAG, "Last client unbound from service");
-
-        // Called when the last client (MainActivity in case of this sample) unbinds from this
-        // service. If this method is called due to a configuration change in MainActivity, we
-        // do nothing. Otherwise, we make this service a foreground service.
-        if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
-            Log.i(TAG, "Starting foreground service");
-
-            startForeground(NOTIFICATION_ID, getNotification());
-        }
-        return true; // Ensures onRebind() is called when a client re-binds.
-    }
 
     @Override
     public void onDestroy() {
@@ -290,6 +268,7 @@ public class LocationUpdatesService extends Service {
             curLat = mLocation.getLatitude() + 90d;
             curLong = mLocation.getLongitude() + 180d;
         }catch (Exception e){
+            e.printStackTrace();
 
         }
 

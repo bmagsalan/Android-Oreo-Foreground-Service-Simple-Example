@@ -7,15 +7,25 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 
@@ -34,6 +44,12 @@ public class MyService extends Service {
     private static ScreenActionReceiver screenactionreceiver;
     private static String lastState = "";
 
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
+    private Location mLocation;
+
+
     public MyService() {
     }
 
@@ -48,8 +64,22 @@ public class MyService extends Service {
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                onNewLocation(locationResult.getLastLocation());
+            }
+        };
+
         stateService = getIsConnected(getApplicationContext()) ;
         lastState = getLastState(getApplicationContext());
+    }
+
+    private void onNewLocation(Location lastLocation) {
+        Log.e(TAG, "New location: " + lastLocation);
     }
 
     @Override
@@ -78,6 +108,11 @@ public class MyService extends Service {
 
                 Log.d(TAG, "Received user starts foreground intent");
                 int count = 0;
+
+                createLocationRequest();
+
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                        mLocationCallback, Looper.myLooper());
 
 
                 Runnable runnable = new Runnable() {
@@ -264,5 +299,26 @@ public class MyService extends Service {
                 .edit()
                 .putString(KEY_LAST_STATE, text)
                 .apply();
+    }
+
+    /**
+     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
+     */
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+
+    /**
+     * The fastest rate for active location updates. Updates will never be more frequent
+     * than this value.
+     */
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    /**
+     * Sets the location request parameters.
+     */
+    private void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 }
