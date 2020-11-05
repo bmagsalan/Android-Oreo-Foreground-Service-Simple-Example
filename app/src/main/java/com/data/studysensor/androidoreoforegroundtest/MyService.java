@@ -80,6 +80,47 @@ public class MyService extends Service {
 
     private void onNewLocation(Location lastLocation) {
         Log.e(TAG, "New location: " + lastLocation);
+
+        mLocation = lastLocation;
+
+        double curLat = 0;
+        double curLong = 0;
+        try{
+            Log.e(TAG, String.format("%f, %f", mLocation.getLatitude() + 90d, mLocation.getLongitude() + 180d  ) );
+
+            curLat = mLocation.getLatitude() + 90d;
+            curLong = mLocation.getLongitude() + 180d;
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+
+        double tarLat = 43.635589 + 90d;
+        double tarLong = -79.644247 + 180d;
+        double distance = 0.002d;
+
+        String result = "";
+
+        boolean connected = false;
+
+        if( (Math.abs(tarLat - curLat) < distance) && (Math.abs(tarLong - curLong) < distance) ){
+            result = "logged_in";
+            connected = true;
+        }else{
+            result = "stepped_out";
+            connected = false;
+        }
+
+        if( stateService != connected ){
+            UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
+        }
+        mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
+
+        lastState = UtilsTextWriter.getCurrentTimeStamp() + " " + result;
+
+        stateService = connected;
+
     }
 
     @Override
@@ -113,49 +154,6 @@ public class MyService extends Service {
 
                 mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                         mLocationCallback, Looper.myLooper());
-
-
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        if( !started )
-                            return;
-
-                        // need to do tasks on the UI thread
-                        List<ScanResult> wifiScanResults = MainActivity.getWifiScanResults(true, getApplicationContext());
-                        String result = "stepped_out";
-                        boolean connected = false;
-                        for( ScanResult s : wifiScanResults ){
-
-                            if( s.SSID.contains("Acanac")){
-                                result = "logged_in";
-                                connected = true;
-                                break;
-                            }
-
-                        }
-
-                        if( stateService != connected ){
-                            lastState = UtilsTextWriter.getCurrentTimeStamp() + " " + result;
-                            UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
-//                            mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
-                        }
-                        mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
-
-
-
-                        Log.e( TAG, "" + UtilsTextWriter.readInternal(getApplicationContext()));
-
-
-
-                        stateService = connected;
-
-                        handler.postDelayed(this, LOOP_DELAY);
-
-                    }
-                };
-
-// trigger first time
-                handler.postDelayed(runnable, LOOP_DELAY);
 
                 startForeground(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
 
