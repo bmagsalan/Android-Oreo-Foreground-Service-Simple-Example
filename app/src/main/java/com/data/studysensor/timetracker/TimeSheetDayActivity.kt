@@ -80,13 +80,13 @@ class TimeSheetDayActivity : Activity(), AdapterView.OnItemClickListener {
                     var startTimeInMinutes = lastEntry!!.hours * 60 + lastEntry!!.minutes
                     var isNewDay = lastEntry.day != timeEntry.day
                     var endTimeInMinutes = 0
-                    if( isNewDay )
-                    {
-                        UtilsDebug.debug("new day")
-                        endTimeInMinutes = (timeEntry.hours + 24) * 60 + timeEntry.minutes
-                    }else{
+//                    if( isNewDay )
+//                    {
+//                        UtilsDebug.debug("new day")
+//                        endTimeInMinutes = (timeEntry.hours + 24) * 60 + timeEntry.minutes
+//                    }else{
                         endTimeInMinutes = timeEntry.hours * 60 + timeEntry.minutes
-                    }
+//                    }
 
                     var elapsedInMinutes = endTimeInMinutes - startTimeInMinutes
 

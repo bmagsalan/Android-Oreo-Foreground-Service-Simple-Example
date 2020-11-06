@@ -40,12 +40,11 @@ class TimeTrackerActivity : Activity() {
         val builder = VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
 
-        val filelocation =
-            File(Environment.getExternalStoragePublicDirectory(""), MyApplication.EXPORT_FILE)
+        val filelocation = File(Environment.getExternalStoragePublicDirectory(""), MyApplication.EXPORT_FILE)
         val path: Uri = Uri.fromFile(filelocation)
         val emailIntent = Intent(Intent.ACTION_SEND)
         emailIntent.type = "vnd.android.cursor.dir/email"
-        val to = arrayOf("accounts@trysight.com","brian@issist.com")
+        val to = arrayOf("brian@issist.com")
         emailIntent.putExtra(Intent.EXTRA_EMAIL, to)
         emailIntent.putExtra(Intent.EXTRA_STREAM, path)
         val dateFormat: DateFormat = SimpleDateFormat("MM")

@@ -9,12 +9,16 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.data.studysensor.locationupdate.LocationUpdatesService;
+import com.data.studysensor.timetracker.MyApplication;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +39,6 @@ public class MainActivity extends Activity {
         }
 
         Button startButton = findViewById(R.id.button1);
-        Button stopButton = findViewById(R.id.button2);
 
 
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -50,37 +53,16 @@ public class MainActivity extends Activity {
                     startService(startIntent);
                 }
 
-
-            }
-        });
-
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, TimeTrackerActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
 
                 finish();
 
-
             }
         });
-    }
 
 
-
-    public static WifiManager getWifiManager(Context context) {
-        WifiManager wifiManager = null;
-        try {
-
-            wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-
-        return wifiManager;
     }
 
 }
