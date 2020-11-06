@@ -79,14 +79,14 @@ public class MyService extends Service {
     }
 
     private void onNewLocation(Location lastLocation) {
-        Log.e(TAG, "New location: " + lastLocation);
+//        Log.e(TAG, "New location: " + lastLocation);
 
         mLocation = lastLocation;
 
         double curLat = 0;
         double curLong = 0;
         try{
-            Log.e(TAG, String.format("%f, %f", mLocation.getLatitude() + 90d, mLocation.getLongitude() + 180d  ) );
+//            Log.e(TAG, String.format("%f, %f", mLocation.getLatitude() + 90d, mLocation.getLongitude() + 180d  ) );
 
             curLat = mLocation.getLatitude() + 90d;
             curLong = mLocation.getLongitude() + 180d;
@@ -114,12 +114,14 @@ public class MyService extends Service {
 
         if( stateService != connected ){
             UtilsTextWriter.write(UtilsTextWriter.getCurrentTimeStamp() + " " + result);
+            lastState = UtilsTextWriter.getCurrentTimeStamp() + " " + result;
         }
         mNotificationManager.notify(Constants.NOTIFICATION_ID_FOREGROUND_SERVICE, prepareNotification());
 
-        lastState = UtilsTextWriter.getCurrentTimeStamp() + " " + result;
-
         stateService = connected;
+
+        setIsConnected(getApplicationContext(), stateService);
+        setLastState(getApplicationContext(), lastState);
 
     }
 

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import android.provider.Settings
 import android.view.View
 import com.data.studysensor.timetracker.MyApplication
@@ -35,6 +37,8 @@ class TimeTrackerActivity : Activity() {
 
     fun sendEmail(view: View) {
         (application as MyApplication).save()
+        val builder = VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
 
         val filelocation =
             File(Environment.getExternalStoragePublicDirectory(""), MyApplication.EXPORT_FILE)
