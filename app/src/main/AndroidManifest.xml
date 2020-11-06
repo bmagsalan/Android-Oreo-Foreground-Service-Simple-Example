@@ -63,7 +63,7 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name="com.data.studysensor.androidoreoforegroundtest.TimeTrackerActivity" />
+
 <activity android:name="com.data.studysensor.timetracker.TimeSheetDayActivity" />
         <activity android:name="com.data.studysensor.timetracker.TimeSheetMonthActivity" />
         <activity android:name="com.data.studysensor.timetracker.TimeSheetDayDetailedActivity" />
