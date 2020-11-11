@@ -28,6 +28,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -55,6 +56,35 @@ public class MainActivity extends Activity {
 
             }
         });
+
+        Intent intent = getIntent();
+
+        if( intent != null ){
+            String action = intent.getAction();
+            if( action != null){
+                if( action.contains(ScreenActionReceiver.START_GPS_SERVICE)){
+                    Intent startIntent = new Intent(MainActivity.this, MyService.class);
+                    startIntent.setAction(Constants.ACTION.START_ACTION);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(startIntent);
+                    }else{
+                        startService(startIntent);
+                    }
+
+                    finish();
+                }
+
+            }
+
+
+        }else{
+
+
+        }
+
+
+
 
 
     }

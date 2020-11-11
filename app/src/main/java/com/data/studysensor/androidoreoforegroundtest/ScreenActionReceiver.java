@@ -4,18 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.NetworkInfo;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
-
-import java.util.List;
 
 public class ScreenActionReceiver extends BroadcastReceiver {
 
+    public static final String START_GPS_SERVICE = "START_GPS_SERVICE";
     private String TAG = "ScreenActionReceiver";
 
     @Override
@@ -45,7 +38,7 @@ public class ScreenActionReceiver extends BroadcastReceiver {
 
             //Run the locker
 
-            context.startService(new Intent(context, FloatingWindow.class));
+//            context.startService(new Intent(context, FloatingWindow.class));
 
 
         }
@@ -61,11 +54,11 @@ public class ScreenActionReceiver extends BroadcastReceiver {
         {
             Log.e(TAG, "screen is unlock...");
 //            Toast.makeText(context,"screen UNLOCK",Toast.LENGTH_LONG);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(new Intent(context, FloatingWindow.class));
-            } else {
-                context.startService(new Intent(context, FloatingWindow.class));
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(new Intent(context, FloatingWindow.class));
+//            } else {
+//                context.startService(new Intent(context, FloatingWindow.class));
+//            }
 
 
         }
@@ -78,11 +71,17 @@ public class ScreenActionReceiver extends BroadcastReceiver {
             context.startService(i);
 
 */
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(new Intent(context, FloatingWindow.class));
-            } else {
-                context.startService(new Intent(context, FloatingWindow.class));
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(new Intent(context, FloatingWindow.class));
+//            } else {
+//                context.startService(new Intent(context, FloatingWindow.class));
+
+//            }
+
+            Intent i = new Intent(context, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.setAction(START_GPS_SERVICE);
+            context.startActivity(i);
         }
         else{
             Log.e(TAG, action);

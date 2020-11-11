@@ -79,7 +79,7 @@ public class MyService extends Service {
     }
 
     private void onNewLocation(Location lastLocation) {
-//        Log.e(TAG, "New location: " + lastLocation);
+        Log.e(TAG, "New location: " + lastLocation);
 
         mLocation = lastLocation;
 
@@ -92,7 +92,6 @@ public class MyService extends Service {
             curLong = mLocation.getLongitude() + 180d;
         }catch (Exception e){
             e.printStackTrace();
-
         }
 
 
@@ -208,13 +207,6 @@ public class MyService extends Service {
         notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        // if min sdk goes below honeycomb
-        /*if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        } else {
-            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }*/
-
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // make a stop intent
@@ -225,12 +217,24 @@ public class MyService extends Service {
         remoteViews.setOnClickPendingIntent(R.id.btn_stop, pendingStopIntent);
 
         // if it is connected
-        remoteViews.setTextViewText(R.id.tv_state, UtilsTextWriter.getCurrentTimeStamp() + ": " + (stateService ? "Logged In" : "Out of Office"));
 
 
 
+        double curLat = 0;
+        double curLong = 0;
+        try{
+//            Log.e(TAG, String.format("%f, %f", mLocation.getLatitude() + 90d, mLocation.getLongitude() + 180d  ) );
 
-        String text = UtilsTextWriter.getCurrentTimeStamp() + ": " + lastState;
+            curLat = mLocation.getLatitude() + 90d;
+            curLong = mLocation.getLongitude() + 180d;
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+
+        String text = UtilsTextWriter.getCurrentTimeStamp() + "\n" + lastState + "\n" + String.format("%f, %f",curLat,curLong);
+        remoteViews.setTextViewText(R.id.tv_state, text);
 
         // notification builder
         NotificationCompat.Builder notificationBuilder;
@@ -240,10 +244,10 @@ public class MyService extends Service {
             notificationBuilder = new NotificationCompat.Builder(this);
         }
         notificationBuilder
-//                .setContent(remoteViews)
+                .setContent(remoteViews)
                 .addAction(R.drawable.ic_launcher, "Cancel",
                         pendingStopIntent)
-                .setContentText(text)
+//                .setContentText(text)
                 .setContentTitle("Wifi Time Tracker")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)

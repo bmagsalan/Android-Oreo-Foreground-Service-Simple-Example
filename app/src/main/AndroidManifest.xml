@@ -38,6 +38,7 @@
             android:name=".MyService"
             android:enabled="true"
             android:exported="true"
+            android:process=":gps_thread"
 
             >
             <intent-filter android:priority="90000">
@@ -47,9 +48,6 @@
                 <action android:name="android.intent.action.USER_PRESENT"/>
                 <action android:name="android.intent.action.USER_UNLOCKED"/>
             </intent-filter>
-        </service>
-
-        <service android:name=".FloatingWindow">
         </service>
 
         <receiver android:name=".ScreenActionReceiver">
